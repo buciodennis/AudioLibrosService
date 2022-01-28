@@ -31,50 +31,50 @@ public class ServicioPrimerPlano extends Service implements
         }
     }
 
-    @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
-        return binder;
-    }
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-
-        Log.d("ServicioPrimerPlano", intent.getStringExtra("url"));
-
-        mediaPlayer = new MediaPlayer();
-       // mediaController = new MediaController(getActivity());
-        mediaPlayer.setOnPreparedListener(this);
-        try {
-            mediaPlayer.setDataSource(
-                    String.valueOf(Uri.parse(intent.getStringExtra("url"))));
-            mediaPlayer.prepareAsync();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    public void onCreate() {
+        super.onCreate();
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
         Notification notification= new NotificationCompat.Builder(this, "canalServicio")
                 .setContentTitle("Notificacion Servicio")
-                .setContentText("Notificacion")
+                .setContentText("Reproduciendo audio libro")
                 .setContentIntent(pendingIntent)
                 .build();
 
         startForeground(1, notification);
-
-
-
-        return START_STICKY;
     }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+
+
+
+
+    public void crearMediaPlayer(String url) {
+        Log.d("ServicioPrimerPlano", url);
+
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setOnPreparedListener(this);
+        try {
+            mediaPlayer.setDataSource(
+                    String.valueOf(Uri.parse(url)));
+            mediaPlayer.prepareAsync();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
-
         mediaPlayer.start();
-
-
     }
 
 
