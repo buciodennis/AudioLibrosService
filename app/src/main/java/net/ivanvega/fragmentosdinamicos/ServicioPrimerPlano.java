@@ -57,9 +57,13 @@ public class ServicioPrimerPlano extends Service implements
 
 
 
-    public void crearMediaPlayer(String url) {
+    public void crearMediaPlayer( String url) {
         Log.d("ServicioPrimerPlano", url);
 
+        if (mediaPlayer != null) {
+            mediaPlayer.reset();
+            mediaPlayer.release();
+        }
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnPreparedListener(this);
         try {
@@ -71,6 +75,12 @@ public class ServicioPrimerPlano extends Service implements
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //mediaPlayer.stop();
+        //mediaPlayer.release();
+    }
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {

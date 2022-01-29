@@ -1,6 +1,9 @@
 package net.ivanvega.fragmentosdinamicos;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -9,6 +12,7 @@ import android.os.Bundle;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
+import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,6 +23,7 @@ import android.widget.MediaController;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -50,9 +55,29 @@ public class DetalleFragment extends Fragment
     MediaPlayer mediaPlayer;
     MediaController mediaController;
 
+    String libroUrl;
+
     public DetalleFragment() {
         // Required empty public constructor
     }
+
+    ServicioPrimerPlano servicioP = new ServicioPrimerPlano();
+    private ServiceConnection mConnection = new ServiceConnection() {
+        //@RequiresApi(api = Build.VERSION_CODES.O)
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            servicioP = ((ServicioPrimerPlano.MiBinder)iBinder).getService();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                servicioP.crearMediaPlayer( libroUrl);
+            }
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
+    };
 
     /**
      * Use this factory method to create a new instance of
@@ -79,7 +104,11 @@ public class DetalleFragment extends Fragment
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+        Intent intent = new Intent(getContext(), ServicioPrimerPlano.class);
+        getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -130,7 +159,7 @@ public class DetalleFragment extends Fragment
         lblTitulo.setText(libro.getTitulo());
         lblAutor.setText(libro.getAutor());
         imvPortada.setImageResource(libro.getRecursoImagen());
-
+        libroUrl = libro.getUrl();
 
         Intent intent = new Intent(getContext(), ServicioPrimerPlano.class);
         intent.putExtra("url",libro.getUrl());
@@ -144,7 +173,16 @@ public class DetalleFragment extends Fragment
         this.setInfoLibro(pos,getView()    );
     }
 
+    public void onPrepared(MediaPlayer mediaPlayer) {
 
+        mediaController.setMediaPlayer((MediaController.MediaPlayerControl) servicioP);
+        mediaController.setAnchorView(
+                getView().findViewById(R.id.fragment_detalle_layout_root));
+        mediaController.setEnabled(true);
+        mediaController.show();
+        mediaPlayer.start();
+
+    }
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -163,8 +201,8 @@ public class DetalleFragment extends Fragment
 
     @Override
     public void onStop() {
-        mediaPlayer.stop();
-        mediaPlayer.release();
+        //mediaPlayer.stop();
+        //mediaPlayer.release();
         super.onStop();
     }
 
