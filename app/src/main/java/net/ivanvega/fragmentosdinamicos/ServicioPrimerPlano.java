@@ -19,11 +19,13 @@ import androidx.core.app.NotificationCompat;
 import java.io.IOException;
 
 public class ServicioPrimerPlano extends Service implements
-        MediaPlayer.OnPreparedListener{
+        MediaPlayer.OnPreparedListener,
+        MediaController.MediaPlayerControl{
 
     MediaPlayer mediaPlayer;
 
     private final IBinder binder= new MiBinder();
+
 
     public class MiBinder extends Binder{
         ServicioPrimerPlano getService(){
@@ -52,13 +54,10 @@ public class ServicioPrimerPlano extends Service implements
     public IBinder onBind(Intent intent) {
         return binder;
     }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
-
-
-
-
-    public void crearMediaPlayer( String url) {
-        Log.d("ServicioPrimerPlano", url);
+    public void crearMediaPlayer( MediaPlayer.OnPreparedListener preparedListener, String url) {
+        Log.d("Se creo mediaPlayer", url);
 
         if (mediaPlayer != null) {
             mediaPlayer.reset();
@@ -67,6 +66,7 @@ public class ServicioPrimerPlano extends Service implements
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnPreparedListener(this);
         try {
+            mediaPlayer.setOnPreparedListener(preparedListener);
             mediaPlayer.setDataSource(
                     String.valueOf(Uri.parse(url)));
             mediaPlayer.prepareAsync();
@@ -78,13 +78,66 @@ public class ServicioPrimerPlano extends Service implements
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //mediaPlayer.stop();
-        //mediaPlayer.release();
     }
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
         mediaPlayer.start();
+    }
+
+    @Override
+    public void start() {
+        mediaPlayer.start();
+    }
+
+    @Override
+    public void pause() {
+        mediaPlayer.pause();
+    }
+
+    @Override
+    public int getDuration() {
+        return mediaPlayer.getDuration();
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        return mediaPlayer.getCurrentPosition();
+    }
+
+    @Override
+    public void seekTo(int i) {
+        mediaPlayer.seekTo(i);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return mediaPlayer.isPlaying();
+    }
+
+    @Override
+    public int getBufferPercentage() {
+        return 0;
+    }
+
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return 0;
     }
 
 

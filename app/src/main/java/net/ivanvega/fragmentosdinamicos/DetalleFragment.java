@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import android.os.IBinder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,8 +34,9 @@ import java.io.IOException;
  * create an instance of this fragment.
  */
 public class DetalleFragment extends Fragment
-    implements MediaController.MediaPlayerControl,
-        View.OnTouchListener
+    implements
+        View.OnTouchListener,
+        MediaPlayer.OnPreparedListener
 
 {
 
@@ -61,14 +63,19 @@ public class DetalleFragment extends Fragment
         // Required empty public constructor
     }
 
-    ServicioPrimerPlano servicioP = new ServicioPrimerPlano();
+    ServicioPrimerPlano servicioP = null;
     private ServiceConnection mConnection = new ServiceConnection() {
         //@RequiresApi(api = Build.VERSION_CODES.O)
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            Log.d("Conexion", "Servicio conectado");
             servicioP = ((ServicioPrimerPlano.MiBinder)iBinder).getService();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                servicioP.crearMediaPlayer( libroUrl);
+                ServicioPrimerPlano.MiBinder binder= (ServicioPrimerPlano.MiBinder) iBinder;
+                servicioP=binder.getService();
+                servicioP.crearMediaPlayer(DetalleFragment.this, libroUrl);
+
+
             }
 
         }
@@ -105,8 +112,7 @@ public class DetalleFragment extends Fragment
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        Intent intent = new Intent(getContext(), ServicioPrimerPlano.class);
-        getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
     }
 
 
@@ -145,6 +151,10 @@ public class DetalleFragment extends Fragment
               setInfoLibro(0, layout);
           }
 
+
+        Intent intent = new Intent(getContext(), ServicioPrimerPlano.class);
+        getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
         return layout;
     }
 
@@ -161,9 +171,9 @@ public class DetalleFragment extends Fragment
         imvPortada.setImageResource(libro.getRecursoImagen());
         libroUrl = libro.getUrl();
 
-        Intent intent = new Intent(getContext(), ServicioPrimerPlano.class);
-        intent.putExtra("url",libro.getUrl());
-        getActivity().startForegroundService(intent);
+
+
+
     }
 
 
@@ -174,7 +184,7 @@ public class DetalleFragment extends Fragment
     }
 
     public void onPrepared(MediaPlayer mediaPlayer) {
-
+        Log.d("MediaController", "Se creo");
         mediaController.setMediaPlayer((MediaController.MediaPlayerControl) servicioP);
         mediaController.setAnchorView(
                 getView().findViewById(R.id.fragment_detalle_layout_root));
@@ -186,79 +196,13 @@ public class DetalleFragment extends Fragment
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-
-
-      /* mediaController = new MediaController(getActivity(),false);
-        //Note do not create any variable of mediaplayer
-        mediaController.setMediaPlayer(this);
-        mediaController.setAnchorView(
-                getView().findViewById(R.id.fragment_detalle_layout_root));
-        mediaController.setEnabled(true);
-        mediaController.show();*/
-
         return false;
     }
 
     @Override
     public void onStop() {
-        //mediaPlayer.stop();
-        //mediaPlayer.release();
         super.onStop();
     }
 
-    @Override
-    public void start() {
-        mediaPlayer.start();
-    }
-
-    @Override
-    public void pause() {
-        mediaPlayer.pause();
-    }
-
-    @Override
-    public int getDuration() {
-        return mediaPlayer.getDuration();
-    }
-
-    @Override
-    public int getCurrentPosition() {
-        return mediaPlayer.getCurrentPosition();
-    }
-
-    @Override
-    public void seekTo(int i) {
-        mediaPlayer.seekTo(i);
-    }
-
-    @Override
-    public boolean isPlaying() {
-        return mediaPlayer.isPlaying();
-    }
-
-    @Override
-    public int getBufferPercentage() {
-        return 0;
-    }
-
-    @Override
-    public boolean canPause() {
-        return true;
-    }
-
-    @Override
-    public boolean canSeekBackward() {
-        return true;
-    }
-
-    @Override
-    public boolean canSeekForward() {
-        return true;
-    }
-
-    @Override
-    public int getAudioSessionId() {
-        return 0;
-    }
 
 }
