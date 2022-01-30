@@ -74,8 +74,6 @@ public class DetalleFragment extends Fragment
                 ServicioPrimerPlano.MiBinder binder= (ServicioPrimerPlano.MiBinder) iBinder;
                 servicioP=binder.getService();
                 servicioP.crearMediaPlayer(DetalleFragment.this, libroUrl);
-
-
             }
 
         }
@@ -185,7 +183,8 @@ public class DetalleFragment extends Fragment
 
     public void onPrepared(MediaPlayer mediaPlayer) {
         Log.d("MediaController", "Se creo");
-        mediaController.setMediaPlayer((MediaController.MediaPlayerControl) servicioP);
+        mediaController= new MediaController(getContext());
+        mediaController.setMediaPlayer(servicioP);
         mediaController.setAnchorView(
                 getView().findViewById(R.id.fragment_detalle_layout_root));
         mediaController.setEnabled(true);

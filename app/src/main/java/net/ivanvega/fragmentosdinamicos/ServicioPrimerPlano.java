@@ -26,6 +26,11 @@ public class ServicioPrimerPlano extends Service implements
 
     private final IBinder binder= new MiBinder();
 
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
 
     public class MiBinder extends Binder{
         ServicioPrimerPlano getService(){
@@ -38,9 +43,9 @@ public class ServicioPrimerPlano extends Service implements
         super.onCreate();
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent =
-                PendingIntent.getActivity(this, 0, notificationIntent, 0);
+                PendingIntent.getActivity(this, 1, notificationIntent, PendingIntent.FLAG_MUTABLE);
 
-        Notification notification= new NotificationCompat.Builder(this, "canalServicio")
+        Notification notification= new NotificationCompat.Builder(this, "10")
                 .setContentTitle("Notificacion Servicio")
                 .setContentText("Reproduciendo audio libro")
                 .setContentIntent(pendingIntent)
@@ -49,11 +54,7 @@ public class ServicioPrimerPlano extends Service implements
         startForeground(1, notification);
     }
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return binder;
-    }
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void crearMediaPlayer( MediaPlayer.OnPreparedListener preparedListener, String url) {
